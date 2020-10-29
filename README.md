@@ -1,5 +1,5 @@
 # Neural-Network
 An easy to use Neural Network package
 ```js
-hmm
+console.log('yeya')
 ```

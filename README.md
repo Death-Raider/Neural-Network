@@ -1,5 +1,6 @@
 # Neural-Network
 An easy to use Neural Network package with SGD using backpropergation as a gradient computing technique.
+
 Creating the model
 ------------------
 ```js

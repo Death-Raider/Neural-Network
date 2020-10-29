@@ -1,3 +1,5 @@
 # Neural-Network
-Neural Network in JS
--
+An easy to use Neural Network package
+```js
+hmm
+```

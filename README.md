@@ -18,7 +18,7 @@ Parameters like the activations for hidden layer and output layers are set as le
 //format for activation function = [ function ,  derivative of function ]
 network.Activation.hidden = [(x)=>1/(1+Math.exp(-x)),(x)=>x*(1-x)] //sets activation for hidden layers as sigmoid function
 ```
-Training, testing and using
+Training, Testing and Using
 ---------------------------
 For this example we'll be testing it on the XOR function
 ```js
@@ -38,7 +38,9 @@ network.train({
 });
 ```
 The `trainFunc` and `validationFunc` recieve an input of the batch iteration and the current epoch which can be used in the functions.
+
 _`NOTE: The validationFunc is called AFTER the training is done`_
+
 Now to see the avg. test loss:
 ```js
 console.log("Average Validation Loss ->",network.Loss.Validation_Loss.reduce((a,b)=>a+b)/network.Loss.Validation_Loss.length);
@@ -64,3 +66,5 @@ console.log("truth table ->",output)
 //   [ 0.006998581457622981 ]
 // ]
 ```
+Saving and Loading Models
+-------------------------

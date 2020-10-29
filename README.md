@@ -4,7 +4,7 @@ An easy to use Neural Network package with SGD using backpropergation as a gradi
 Creating the model
 ------------------
 ```js
-const NeuralNetwork = require('.Neural Network/Neural-Network.js')
+const NeuralNetwork = require('./Neural Network/Neural-Network.js')
 //creates ANN with 2 input nodes, 1 hidden layers with 2 hidden nodes and 1 output node
 let network = new NeuralNetwork({
   input_nodes : 2,

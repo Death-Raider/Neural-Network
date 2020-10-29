@@ -68,7 +68,7 @@ class NeuralNetwork {
       let batch = (i < parseInt(TotalTrain/batch_train))?batch_train:batch_val;
       let sumCost = 0;
       for(let b = 0; b < batch ; b++){
-        let [input,desir] = (i <= parseInt(TotalTrain/batch_train))?trainFunc():validationFunc();
+        let [input,desir] = (i <= parseInt(TotalTrain/batch_train))?trainFunc(b,i):validationFunc(b,i);
         this.Nodes=this.GetLayerValues(input,[this.Activation.hidden[0],this.Activation.output[0]]);
         changing[b]=this.changes(desir,this.Nodes[this.Nodes.length-1],[this.Activation.hidden[1],this.Activation.output[1]]);
         sumCost += changing[b].Cost/batch
@@ -115,7 +115,7 @@ class NeuralNetwork {
       console.log(`done saving ${(initilizer === 'W')?"Weights":"Bias"}`);
     }
   }
-  async load(folder){
+  async load(path){
     function getLines(folder,res){
       const readline  = require('readline');
       const fs = require('fs');
@@ -132,7 +132,7 @@ class NeuralNetwork {
       }
       readInterface.on('close', ()=>{res(lines)});
     }
-    let model = new Promise(function(resolve, reject){getLines('model',resolve)});
+    let model = new Promise(function(resolve, reject){getLines(path,resolve)});
     model = await model;
     this.Bias = model[0].flat();
     this.Weights = model[1];

@@ -1,5 +1,5 @@
 # Neural Network
-An easy to use Neural Network package with SGD using backpropergation as a gradient computing technique.
+An easy to use Neural Network package with SGD using backpropagation as a gradient computing technique.
 
 Creating the model
 ------------------
@@ -68,3 +68,34 @@ console.log("truth table ->",output)
 ```
 Saving and Loading Models
 -------------------------
+This package allows to save the hyperparameters(weights and bias) in a file(s) and then unpack them, allowing us to use pretrained models.
+Saving the model couldnt be further from simplicity:
+```js
+network.save(path)
+```
+Loading the model requires a bit more work as it is asynchronous: 
+```js
+const NeuralNetwork = require('./Neural Network/Neural-Network.js')
+let network = new NeuralNetwork({
+  input_nodes : 2,
+  layer_count : [2],
+  output_nodes :1,
+  weight_bias_initilization_range : [-1,1]
+});
+(async () =>{
+  await network.load(path) //make sure network is of correct structure
+  let output = [
+    network.use([0,0]),
+    network.use([0,1]),
+    network.use([1,0]),
+    network.use([1,1])
+  ]
+  console.log(output)
+})()
+// [
+//   [ 0.00175002108724987 ],
+//   [ 0.996368664915631 ],
+//   [ 0.9964380716826002 ],
+//   [ 0.0018394054881407137 ]
+// ]
+```

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="Network CSS.css">
+    <title>Neural Network Playground</title>
+  </head>
+  <body>
+    <div id="centerStuff">
+      <p style="color:White;text-align:center;" id="title"><big>NEURAL NETWORK</big></p>
+      <canvas id="canvas" width="750" height="300"> </canvas><br>
+    </div>
+    <div id="ErrorGraph">
+      <p style="color:White; text-align:center;">
+        <big>- - - Loss decay - - -</big><br>
+        <ul>
+          <li>Y-axis: It represents the error value of the network</li>
+          <li>X-axis: It represents the training epoch with batch 5</li>
+        </ul>
+      </p>
+      <canvas id="errorGraph" width="700" height="250" style="border:none;"></canvas>
+    </div>
+    <div id="INPUTS">
+      <div id="inputsNetwork">
+        <p style="color:White; text-align:center;"><big>- - - Hyper Parameters - - -</big></p>
+        Input Nodes:<input type="text" id="inputCount" value="10" size=3><br>
+        Hidden Layers:<input type="text" id="hiddenLayerCount" value="0" size=3><br>
+        Hidden Nodes per layer:<input type="text" id="hiddenNodeCount" value="0" size=3><br>
+        Output Nodes:<input type="text" id="outputCount" value="10" size=3><br>
+        Total training data:<input type="text" id="training" value="200" size=5><br>
+        Layer Space:<input type="text" id="layerspace" value="100" size=3><br>
+        Error:<input type="text" id="Error" class="disabled-values" value="0" disabled><br>
+        <button type="button" onClick="plotNN()">run</button><br>
+      </div>
+      <div id="inputsFunc">
+        <p style="color:White; text-align:center;">
+          <big>- - - TRAINING FUNCTION - - -</big><br>
+          <ul>
+            <li>The function must be in Javascript</li>
+            <li>The function must return an array containing<br> the input array and the output array</li>
+          </ul>
+        </p>
+        <textarea rows="10" cols="50" id="trainFunc" placeholder="Enter Function" style="margin: 0px; width: 615px; height: 186px;">()=>{
+  let output = new Array(10).fill(0)
+  let input = new Array(10).fill(0).map(e=>Math.random())
+  output[Math.floor(Math.random()*output.length)] = 1
+  return [input,output];
+}</textarea>
+      </div>
+    </div>
+    <script src="Functions.js" charset="utf-8"></script>
+    <script src="Neural-Network.js" charset="utf-8"></script>
+    <script src="ErrorPlot.js" charset="utf-8"></script>
+    <script src="Plot.js" charset="utf-8"></script>
+  </body>
+</html>

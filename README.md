@@ -99,3 +99,10 @@ let network = new NeuralNetwork({
 //   [ 0.0018394054881407137 ]
 // ]
 ```
+Future Updates
+--------------
+1) Convolution and other image processing functions
+2) Convolutional Neural Network (CNN)
+3) Recurrent Neural Network (RNN)
+4) Long Short Term Memory (LSTM)
+5) Proper documentation

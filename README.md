@@ -58,20 +58,13 @@ console.log("Average Validation Loss ->",network.Loss.Validation_Loss.reduce((a,
 ```
 To use the network:
 ```js
-// network.use(inputs)
+// network.use(inputs)  --> returns the hidden node values as well
 let output = [ //truth table for xor gate
   network.use([0,0]),
   network.use([0,1]),
   network.use([1,0]),
   network.use([1,1])
 ]
-console.log("truth table ->",output)
-// truth table -> [
-//   [ 0.006628016503533872 ],
-//   [ 0.9924992698592481 ],
-//   [ 0.9925101128583149 ],
-//   [ 0.006998581457622981 ]
-// ]
 ```
 Saving and Loading Models
 -------------------------
@@ -91,20 +84,13 @@ let network = new NeuralNetwork({
 });
 (async () =>{
   await network.load(path) //make sure network is of correct structure
-  let output = [
-    network.use([0,0]),
-    network.use([0,1]),
-    network.use([1,0]),
-    network.use([1,1])
+  let output = [  
+    network.use([0,0]),  --> returns the hidden node values as well
+    network.use([0,1]),  --> returns the hidden node values as well
+    network.use([1,0]),  --> returns the hidden node values as well
+    network.use([1,1])   --> returns the hidden node values as well
   ]
-  console.log(output)
 })()
-// [
-//   [ 0.00175002108724987 ],
-//   [ 0.996368664915631 ],
-//   [ 0.9964380716826002 ],
-//   [ 0.0018394054881407137 ]
-// ]
 ```
 Future Updates
 --------------

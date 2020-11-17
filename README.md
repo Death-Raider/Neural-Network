@@ -85,10 +85,10 @@ let network = new NeuralNetwork({
 (async () =>{
   await network.load(path) //make sure network is of correct structure
   let output = [  
-    network.use([0,0]),  --> returns the hidden node values as well
-    network.use([0,1]),  --> returns the hidden node values as well
-    network.use([1,0]),  --> returns the hidden node values as well
-    network.use([1,1])   --> returns the hidden node values as well
+    network.use([0,0]),  // --> returns the hidden node values as well
+    network.use([0,1]),  // --> returns the hidden node values as well
+    network.use([1,0]),  // --> returns the hidden node values as well
+    network.use([1,1])   // --> returns the hidden node values as well
   ]
 })()
 ```

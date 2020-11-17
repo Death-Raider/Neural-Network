@@ -1,5 +1,12 @@
 # Neural Network
-An easy to use Neural Network package with SGD using backpropagation as a gradient computing technique.
+Installing
+-----------
+```
+npm i @death_raider/neural-network
+```
+About
+-----
+This is an easy to use Neural Network package with SGD using backpropagation as a gradient computing technique.
 
 Creating the model
 ------------------

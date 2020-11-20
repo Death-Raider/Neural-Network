@@ -1,14 +1,14 @@
 class NeuralNetwork {
-  constructor({input_nodes,layer_count,output_nodes,weight_bias_initilization_range=[-0.001,0.001] } = {}){
+  constructor({input_nodes,layer_count,output_nodes,weight_bias_initilization_range=[-0.001,0.001]} = {}){
     if(input_nodes === undefined || layer_count === undefined || output_nodes === undefined) throw "Error: structural values not given"
     let parameters=createParameters(input_nodes,layer_count,output_nodes,weight_bias_initilization_range[0],weight_bias_initilization_range[1]);
     const copyRadar3D = (y,z = []) =>{for (let _a in y) for (let _b in y[_a]) {if(!z[_a]) z[_a] = []; z[_a][_b] = y[_a][_b].slice();};return z}
     const copyRadar2D = (y,z = []) =>{for (let _a in y){if(!z[_a]) z[_a] = []; z[_a] = y[_a].slice();};return z}
     this.HiddenLayerCount=layer_count;
     this.Weights = copyRadar3D(parameters[0])
-    this.WeightUpdates = copyRadar3D(parameters[0])
+    this.WeightUpdates = copyRadar3D(parameters[0]) // weight gradients
     this.Bias = copyRadar2D(parameters[1])
-    this.BiasUpdates = copyRadar2D(parameters[1])
+    this.BiasUpdates = copyRadar2D(parameters[1]) // bias gradients
     this.Activation = {
       hidden:[(x)=>(x>0)?x:x*0.1,(x)=>(x>0)?1:0.1],
       output:[(x)=>1/(1+Math.exp(-x)),(x)=>x*(1-x)]
@@ -41,7 +41,7 @@ class NeuralNetwork {
   changes(Desired,Output,DerivativeActivation){//backword pass
     let cost=0;
     for(let i = 0; i < Desired.length; i++) cost+=0.5*Math.pow(Output[i]-Desired[i],2);
-    for(let i = 0; i < this.Nodes[this.HiddenLayerCount.length + 1].length; i++){
+    for(let i = 0; i < this.Nodes[this.HiddenLayerCount.length + 1].length; i++){//iterates for last layer
       this.BiasUpdates[this.Weights.length-1][i]=(this.Nodes[this.HiddenLayerCount.length+1][i]-Desired[i])*DerivativeActivation[1](this.Nodes[this.HiddenLayerCount.length+1][i]);
       for(let j = 0; j < this.Nodes[this.HiddenLayerCount.length].length; j++) this.WeightUpdates[this.Weights.length-1][i][j]=(this.BiasUpdates[this.Weights.length-1][i]*this.Nodes[this.HiddenLayerCount.length][j]);
     }
@@ -54,27 +54,12 @@ class NeuralNetwork {
     }
     return {updatedWeights:this.WeightUpdates,updatedBias:this.BiasUpdates,Cost:cost};
   }
-  Convolution({matrix,filter,bias,step = {x:1,y:1}} = {}){
-    let output = []
-    let outputSize = {
-      y : 1+(matrix.length - filter.length)/step.y,
-      x : 1+(matrix[0].length - filter[0].length)/step.x
+  getInputGradients(grad = []){
+    for(let k = 0,sum = 0; k < this.Nodes[0].length; k++,sum = 0){
+      for(let m = 0; m < this.Weights[0].length; m++) sum += this.Weights[0][m][k]*this.WeightUpdates[0][m][k];
+      grad[k] = sum/((this.Nodes[0][k]===0)?1:this.Nodes[0][k]);
     }
-    if(outputSize.y-Math.floor(outputSize.y) !== 0 || outputSize.x-Math.floor(outputSize.x) !== 0 ) throw "Err: size not compatible";
-    output = [];
-    for(let y = 0; y < outputSize.y; y++){
-      output[y] = [];
-      for(let x = 0; x < outputSize.x; x++){
-        let sum = 0;
-        for(let f1 = 0; f1 < filter.length; f1++){
-          for(let f2 = 0; f2 < filter[f1].length; f2++){
-            sum += filter[f1][f2]*matrix[f1+y*step.y][f2+x*step.x];
-          }
-        }
-        output[y][x] = Activation[0](sum + bias);
-      }
-    }
-    return output
+    return grad
   }
   update(secondTensor,secondMatrixBias,rate){//Readjustment of weights and bias
     for(let i = 0; i < secondTensor.length; i++){
@@ -84,7 +69,7 @@ class NeuralNetwork {
       }
     }
   }
-  train({TotalTrain=0,trainFunc=()=>{},TotalVal=0,validationFunc=()=>{},learning_rate=0.0005,batch_train = 1,batch_val = 1} = {}){
+  trainBatch({TotalTrain=0,trainFunc=()=>{},TotalVal=0,validationFunc=()=>{},learning_rate=0.0005,batch_train = 1,batch_val = 1} = {}){
     let cost=[], cost_val=[], changing = [];
     for(let i = 0; i < parseInt((TotalTrain/batch_train+TotalVal/batch_val)); i++){
       let batch = (i < parseInt(TotalTrain/batch_train))?batch_train:batch_val;
@@ -111,6 +96,12 @@ class NeuralNetwork {
       }else{cost_val.push(sumCost)}
     }
     this.Loss = {Train_Loss:cost,Validation_Loss:cost_val};
+  }
+  trainIteration({input,desired,learning_rate=0.0001}={}){
+    this.Nodes = this.GetLayerValues(input,[this.Activation.hidden[0],this.Activation.output[0]]);
+    let changing = this.changes(desired,this.Nodes[this.Nodes.length-1],[this.Activation.hidden[1],this.Activation.output[1]]);
+    this.update(this.WeightUpdates,this.BiasUpdates,learning_rate);
+    return {Cost:changing.Cost,layers:this.Nodes}
   }
   use(input){return this.GetLayerValues(input,[this.Activation.hidden[0],this.Activation.output[0]])}
   save(folder){
@@ -160,4 +151,9 @@ class NeuralNetwork {
     this.Weights = model[1];
   }
 }
+
+// const Networks = {
+//   DNN:NeuralNetwork,
+//   CNN:ConvolutionNeuralNetwork
+// }
 module.exports = NeuralNetwork;

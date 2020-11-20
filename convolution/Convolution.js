@@ -1,3 +1,4 @@
+const NeuralNetwork = require('C:/Users/Darsh/Desktop/coding/PROJECTS/AI/ANN/convolution/Neural-Network-test.js')
 //BREAD AND BUTTER OF EVERYTHING
 function Convolution({matrix,filter,bias = 0,step = {x:1,y:1},padding = 0,type="conv",activation = "linear"} = {}){
   let activationBank = {
@@ -99,8 +100,18 @@ function convolutionLayers({matrix,kernal,featureMaps,stride,padding=0,type,acti
 }
 function flattenFeatureMaps(featureMapMatrix){
   let connected = [];
+  let shape = {y:featureMapMatrix[0].length,x:featureMapMatrix[0][0].length}
   for(featurePlane of featureMapMatrix) connected.push(featurePlane.flat())
-  return connected.flat()
+  return [connected.flat(),shape]
+}
+function reconstructMatrix(flatArr,m,Matrix=[]){
+  for(let i = 0; i < m.y; i++){
+    Matrix[i] = []
+    for(let j = 0; j < m.x; j++){
+      Matrix[i][j] = flatArr[j + m.x*i]
+    }
+  }
+  return Matrix
 }
 function backpass(){
 
@@ -147,24 +158,24 @@ function save(y,x){
 
 (async ()=>{
   let image = createMatrix(28,28,1) // simulates a 10x10 RGB image
-
+  //dummy test input
   let input = {
     conv_layers :  [["conv","sigmoid",3],["conv","sigmoid",3],["conv","sigmoid",3],["conv","relu",2]],
     feature_maps : [       1         ,     1        ,        1        ,      1    ],
     strides :      [    {x:1,y:1}     ,    {x:1,y:1}    ,      {x:1,y:1}    ,   {x:2,y:2} ]
   }
-
-  // let imageRGB = await processImage("C:/Users/Darsh/Desktop/oreo1.jpg")
+  
   let ConvLayers = {Layer_0 : image}
   let Filters = [];
 
+  //parsing input given and applying filters (aka feed forward of CNN)
   for(let i = 0; i < input["conv_layers"].length; i++){
     let layer = input.conv_layers[i]
     Filters[i] = createMatrix(layer[layer.length-1],layer[layer.length-1],input["feature_maps"][i]);
     console.log(Filters[i].length,layer);
     ConvLayers[`Layer_${i+1}`] = convolutionLayers({
       matrix : ConvLayers[`Layer_${i}`],
-      kernal : filterRGB,
+      kernal : Filters[i],
       featureMaps : input["feature_maps"][i],
       stride : input["strides"][i],
       padding : 0,
@@ -173,8 +184,26 @@ function save(y,x){
     })
   }
 
-  console.log(flattenFeatureMaps((input.conv_layers[input.conv_layers.length - 1][0] === "max_pool")?ConvLayers.Layer_4[0]:ConvLayers.Layer_4));
+  //reshaping inputs for neural network training
+  let [FullyConnected,FCshape] = flattenFeatureMaps((input.conv_layers[input.conv_layers.length - 1][0] === "max_pool")?ConvLayers.Layer_4[0]:ConvLayers.Layer_4)
+  console.log(FullyConnected,FCshape);
 
-  train()
+  //creating neural network for fully connected parts
+  let network = new NeuralNetwork({
+    input_nodes : FullyConnected.length,
+    layer_count : [30],
+    output_nodes : 10,
+    weight_bias_initilization_range : [-1,1]
+  });
+  //train once
+  let x = network.trainIteration({
+    input : FullyConnected,
+    desired : new Array(10).fill(1),
+    learning_rate : 0.05
+  })
+  console.log(x);
+  //reshaping inputs to matrix for convolutional training
+  let InputGradients = network.getInputGradients()
+  InputGradients = GradireconstructMatrix(InputGradients,FCshape)
 
 })()

@@ -430,7 +430,6 @@ try{
       feature_maps : [1,1,1,1,1,1],
       strides :      [{x:1,y:1},{x:1,y:1},{x:1,y:1},{x:1,y:1},{x:1,y:1},{x:1,y:1}]
     });
-    fs.writeFileSync("Filters/Filters_BEFORE.txt",JSON.stringify(x.Filters.flat()))
 
     let dnn = []
     // let image1 = await x.processImage("pp.jfif")//rose

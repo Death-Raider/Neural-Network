@@ -214,7 +214,6 @@ class ConvolutionNeuralNetwork {
       y : 1+(matrix.length - filter.length)/step.y,
       x : 1+(matrix[0].length - filter[0].length)/step.x
     }
-    console.log(outputSize);
     //checking if convolution is possible
     if(outputSize.y-Math.floor(outputSize.y) !== 0 || outputSize.x-Math.floor(outputSize.x) !== 0 ) throw "Err: size not compatible with " + type;
     let output = new Array(outputSize.y).fill(0).map(e=>new Array(outputSize.x).fill(0))//convoluted output
@@ -223,7 +222,6 @@ class ConvolutionNeuralNetwork {
       mask[y] = []
       for(let x = 0; x < outputSize.x; x++){
         if(type==="conv") output[y][x] = Activation[0](filterDot(x,y,matrix,filter) + bias);
-        else if(type==="full_conv")output[y][x] = Activation[0](filterDot(outputSize.x-(x+1),outputSize.y-(y+1),matrix,filter) + bias);
         else if(type==="max_pool"){
           mask[y][x] = {value:0,position:{x:0,y:0}};
           for(let f1 = 0; f1 < 2; f1++){
@@ -280,26 +278,27 @@ class ConvolutionNeuralNetwork {
         activation : (layer[0] !== "max_pool")?layer[1]:"relu"
       })
     }
-    for(let i in this.ConvLayers) if(i !== "Layer_0") this.Normalization(this.ConvLayers[i]);
-
     //reshaping inputs for neural network training
     let last_layer_conv = Object.keys(this.ConvLayers)[Object.keys(this.ConvLayers).length - 1];
     [this.FullyConnected,this.FCshape] = this.flattenFeatureMaps((this.network[this.network.length - 1][0] === "max_pool")?this.ConvLayers[last_layer_conv][0]:this.ConvLayers[last_layer_conv])
-
+    let max = Math.max(...this.FullyConnected)
+    console.log("max  ", max);
+    if(max > 1) for(let i in this.FullyConnected)this.FullyConnected[i] /= max
     //creating neural network for fully connected parts
     this.FCnetwork = new NeuralNetwork({
       input_nodes : this.FullyConnected.length,
       layer_count : layer_nodes,
       output_nodes : output_nodes,
-      weight_bias_initilization_range : [-1,1]
+      weight_bias_initilization_range : [-0.1,0.1]
     });
+    this.FCnetwork.Activation.hidden = [(x)=>1/(1+Math.exp(-x)),(x)=>x*(1-x)]
     //train once
     let dnn = this.FCnetwork.trainIteration({
       input : this.FullyConnected,
       desired : desired_outputs,
       learning_rate : 0.5
     })
-    console.log(dnn.Cost);
+    console.log(dnn.Cost, dnn.layers);
     return dnn
   }
   backwordPass(){
@@ -312,10 +311,10 @@ class ConvolutionNeuralNetwork {
     //backword pass for CNN
     for(let i = this.Filters.length-1; i > -1 ; i--){
       this.LayerGrad[i] = this.Convolution({
-        matrix : this.Rotate(this.Filters[i][0]), //rotates filter
-        filter : this.LayerGrad[i+1],
+        matrix : this.LayerGrad[i+1],
+        filter : this.Rotate(this.Filters[i][0]),
         step : {x:1,y:1},
-        padding : this.LayerGrad[i+1].length-1,
+        padding : this.Filters[i][0].length-1,
         type : "conv",
         activation : "linear"
       });
@@ -325,7 +324,7 @@ class ConvolutionNeuralNetwork {
         filter : this.LayerGrad[i+1],
         step : {x:1,y:1},
         padding : 0,
-        type : "full_conv",
+        type : "conv",
         activation : "linear"
       });
       this.Bias[i] -= this.learning_rate*this.LayerGrad[i+1].flat().reduce((a,b)=>a+b)
@@ -426,23 +425,20 @@ const spawn = require('child_process').spawn;
 try{
   (async()=>{
     let x = new ConvolutionNeuralNetwork({
-      conv_layers :  [["conv","relu",3],["conv","relu",3],["conv","relu",3],["conv","relu",3],["conv","relu",3],["conv","relu",3]],
-      feature_maps : [1,1,1,1,1,1],
-      strides :      [{x:1,y:1},{x:1,y:1},{x:1,y:1},{x:1,y:1},{x:1,y:1},{x:1,y:1}]
+      conv_layers :  [["conv","sigmoid",5],["conv","sigmoid",3]],
+      feature_maps : [1,1],
+      strides :      [{x:1,y:1},{x:1,y:1},{x:1,y:1}]
     });
-
     let dnn = []
-    // let image1 = await x.processImage("pp.jfif")//rose
-    let image2 = await x.processImage("pp2.jpg")//logo
-
-    for(let k = 0; k < 10000; k++){
+    let image1 = await x.processImage("Train_Images/0's/0.png")
+    for(let k = 0; k < 200; k++){
       let rand = (Math.random()*2-1 > 0)
       dnn[k] = x.forwordPass({
-        image : [image2[0]],
-        layer_nodes : [2000],
+        image : [image1[0]],
+        layer_nodes : [],
         output_nodes : 1,
         desired_outputs : [0],
-        learning_rate : 1e-3
+        learning_rate : 1e-1
       })
       x.backwordPass()
       let filterCreate = new Promise(function(resolve, reject) {
@@ -454,9 +450,11 @@ try{
       await filterCreate;
       await imageCreate;
       console.log("iteration ->",k);
+      for(let i in x.ConvLayers){ if(i !== "Layer_0") x.Normalization(x.ConvLayers[i]);}
     }
     console.log(x.FCnetwork);
     console.log(x);
+    console.log(x.FilterGrad[0][0]);
     let a = []
     dnn.map(e=>{a.push(e.Cost)})
     fs.writeFileSync("cost.txt",JSON.stringify(a))

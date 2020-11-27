@@ -126,13 +126,18 @@ let network = new NeuralNetwork({
 # Image Processing
 Some basic image processing and augmentation can help increase the dataset size while training networks and helps in better generalizations.
 
-Creating Matricies
-------------------
-
+Strarting up
+------------
+We require the package to use
 ```js
 const ImageProcessing = require('@death_raider/neural-network').ImageProcessing
-
 let augmentation = new ImageProcessing()
+```
+
+Creating Matricies
+------------------
+ We can create a C x H x W matrix using this function where C is the number of H x W matricies. The matrix will be between -1 and 1
+```js
 let matrix = augmentation.createMatrix(3,3,3);
 console.log("matrix",matrix);
 /*
@@ -155,7 +160,67 @@ matrix [
 ]
 */
 ```
+Convolution
+-----------
+We can convolve an image matrix in 2 ways:
+1) H x W convolution
+```js
+let matrix = [[1,1,1],[1,1,1],[1,1,1]]
+let conv = augmentation.Convolution({
+  matrix: matrix, //matrix type H x W
+  filter: [  // filter type  H x W
+    [1,1],
+    [1,1]
+  ],
+  bias: 0, // bias
+  step: {x:1,y:1}, // stride to move the filter
+  padding: 0, // amount to add the input matrix with 0
+  type: "conv", // can be "conv" or "max_pool"
+  activation: "relu" // can be "linear","relu" or "sigmoid"
+})
+console.log("single conv->",conv);
+// single conv-> [ [ 4, 4 ], [ 4, 4 ] ]
+```
 
+2) C x H x W convolution
+This is for multi channel convolution with varing feature maps.
+In this example we have a 2 x 3 x 3 input image and we convlve it with a 2 x 2 x 2 filter to get a 2 x 2 x 2 x 2 so each channel of the input
+got convolved with the 2 filters.
+```js
+let matrix = [
+  [[1,1,1],[1,1,1],[1,1,1]], // channel 1
+  [[0,0,0],[1,1,1],[0,0,0]]  // channel 2
+]
+let convMultiChannel = augmentation.convolutionLayers({
+  matrix: matrix, //matrix type C x H x W
+  kernal: [  //kernal type C x H x W
+    [
+      [0,1],
+      [0,0]
+    ],
+    [
+      [0,0],
+      [1,0]
+    ]
+  ],
+  featureMaps: 2, // between 0 and kernal.length
+  stride:{x:1,y:1},
+  padding:0,
+  bias:0,
+  type:"conv",
+  activation: "relu"
+})
+console.log("multi conv",convMultiChannel) //output (channels x convFeature maps x H_new x W_new)
+convMultiChannel.map(e=>console.log(e))
+/*
+multi conv [
+  [ [ [Array], [Array] ], [ [Array], [Array] ] ],
+  [ [ [Array], [Array] ], [ [Array], [Array] ] ]
+]
+[ [ [ 1, 1 ], [ 1, 1 ] ], [ [ 1, 1 ], [ 1, 1 ] ] ]
+[ [ [ 0, 0 ], [ 1, 1 ] ], [ [ 1, 1 ], [ 0, 0 ] ] ]
+*/
+```
 
 Future Updates
 --------------

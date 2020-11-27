@@ -12,5 +12,8 @@
     "machine learning",
     "neural network"
   ],
-  "homepage": "https://github.com/Death-Raider/Neural-Network#readme"
+  "homepage": "https://github.com/Death-Raider/Neural-Network#readme",
+  "dependencies": {
+    "image-pixels": "^2.2.2"
+  }
 }

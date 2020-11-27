@@ -11,7 +11,7 @@ This is an easy to use Neural Network package with SGD using backpropagation as 
 Creating the model
 ------------------
 ```js
-const NeuralNetwork = require('@death_raider/neural-network')
+const NeuralNetwork = require('@death_raider/neural-network').NeuralNetwork
 //creates ANN with 2 input nodes, 1 hidden layers with 2 hidden nodes and 1 output node
 let network = new NeuralNetwork({
   input_nodes : 2,
@@ -90,6 +90,12 @@ let output = [ //truth table for xor gate
   network.use([1,1])
 ]
 ```
+
+To get the gradients w.r.t the inputs (Questionable correct me if wrong values)
+```js
+console.log( network.getInputGradients() );
+```
+
 Saving and Loading Models
 -------------------------
 This package allows to save the hyperparameters(weights and bias) in a file(s) and then unpack them, allowing us to use pretrained models.
@@ -116,11 +122,46 @@ let network = new NeuralNetwork({
   ]
 })()
 ```
+
+# Image Processing
+Some basic image processing and augmentation can help increase the dataset size while training networks and helps in better generalizations.
+
+Creating Matricies
+------------------
+
+```js
+const ImageProcessing = require('@death_raider/neural-network').ImageProcessing
+
+let augmentation = new ImageProcessing()
+let matrix = augmentation.createMatrix(3,3,3);
+console.log("matrix",matrix);
+/*
+matrix [
+  [
+    [ -0.678372439890254, 0.6500779334590403, -0.4565339688601684 ],
+    [ -0.8359020914470849, -0.8694483636477246, 0.16924704621900544 ],
+    [ -0.5988398284917427, -0.4382417489861301, -0.32707306499371747 ]
+  ],
+  [
+    [ -0.8922996259757201, -0.826901601847978, -0.7183706165039161 ],
+    [ 0.7109725262462825, 0.18541035867637534, 0.23335619400348895 ],
+    [ -0.732994280493128, -0.4293017471231919, -0.30308384999392013 ]
+  ],
+  [
+    [ 0.4725701029130227, -0.4855206864171042, 0.2166882512222812 ],
+    [ 0.9341185521019892, 0.8573285355870115, -0.7320992421323922 ],
+    [ -0.043161461538433255, -0.37925479628203806, 0.8177539982172051 ]
+  ]
+]
+*/
+```
+
+
 Future Updates
 --------------
-1) Convolution and other image processing functions
-2) Convolutional Neural Network (CNN)
-3) Visulization of Neural Network
-4) Recurrent Neural Network (RNN)
-5) Long Short Term Memory (LSTM)
-6) Proper documentation
+1) Convolution and other image processing functions    ✔️done
+2) Convolutional Neural Network (CNN)    ❌ pending (next)
+3) Visulization of Neural Network     ❌ pending (next)
+4) Recurrent Neural Network (RNN)     ❌ pending
+5) Long Short Term Memory (LSTM)    ❌ pending
+6) Proper documentation    ❌ pending

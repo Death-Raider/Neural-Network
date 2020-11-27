@@ -28,8 +28,10 @@ network.Activation.hidden = [(x)=>1/(1+Math.exp(-x)),(x)=>x*(1-x)] //sets activa
 Training, Testing and Using
 ---------------------------
 For this example we'll be testing it on the XOR function.
+
 There are 2 ways we can go about training:
-1)Inbuilt Function
+
+1) Inbuilt Function
 ```js
 function xor(){
   let inp = [Math.floor(Math.random()*2),Math.floor(Math.random()*2)]; //random inputs 0 or 1 per cell
@@ -58,7 +60,7 @@ console.log("Average Validation Loss ->",network.Loss.Validation_Loss.reduce((a,
 // Average Validation Loss -> 0.000024864418333478723
 // Average Validation Loss -> 0.000026908106414283446
 ```
-2)Itterative
+2) Iterative
 ```js
 for(let i = 0; i < 10000; i++){
   let [inputs,outputs] = xor()
@@ -76,7 +78,7 @@ for(let i = 0; i < 10000; i++){
 //   [ 0.021348627488749498 ]
 // ]
 ```
-This itterative method can be used for visulizations, dynamic learning rate, etc...
+This iterative method can be used for visulizations, dynamic learning rate, etc...
 
 To use the network:
 ```js

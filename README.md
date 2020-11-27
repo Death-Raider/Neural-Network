@@ -250,7 +250,7 @@ Normalize
 
 Normalizes over all channels of the input matrix to between max(min(normalized),-1) and 1
 ```js
-matrix = [
+let matrix = [
   [[1,2],[3,4]], // channel 1
   [[0.5,0.5],[0.5,0.5]], // channel 2
 ]
@@ -293,6 +293,43 @@ normal matrix [
 */
 // max(-0.714,-1) = -0.714 so matrix normalized between -0.714 and 1
 ```
+Flatten Image
+-------------
+
+Flattens a C x H x W into a single dimensional array of size (C * H * W) and returns this flat array with an object which encodes the structure
+```js
+matrix =[
+  [ // channel 1
+    [1,2,3,4],
+    [5,6,7,8],
+    [9,10,11,12],
+    [13,14,15,16]
+  ],
+  [ // channel 2
+    [-1,-2,-3,-4],
+    [-5,-6,-7,-8],
+    [-9,-10,-11,-12],
+    [-13,-14,-15,-16]
+  ]
+]
+
+let flat = augmentation.flattenImage(matrix) // needs type (C x H x W)
+console.log(flat);
+/*
+[
+  [
+      1,   2,   3,   4,   5,  6,  7,   8,   9,
+     10,  11,  12,  13,  14, 15, 16,  -1,  -2,
+     -3,  -4,  -5,  -6,  -7, -8, -9, -10, -11,
+    -12, -13, -14, -15, -16
+  ],
+  { z: 2, y: 4, x: 4 }
+]
+*/
+```
+Reconstruct Matrix from Flat Array
+----------------------------------
+
 
 
 Future Updates

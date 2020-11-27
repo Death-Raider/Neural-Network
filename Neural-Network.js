@@ -191,7 +191,6 @@ class ImageProcessing {
       y : 1+(matrix.length - filter.length)/step.y,
       x : 1+(matrix[0].length - filter[0].length)/step.x
     }
-    console.log(outputSize);
     //checking if convolution is possible
     if(outputSize.y-Math.floor(outputSize.y) !== 0 || outputSize.x-Math.floor(outputSize.x) !== 0 ) throw "Err: size not compatible with " + type;
     let output = new Array(outputSize.y).fill(0).map(e=>new Array(outputSize.x).fill(0))//convoluted output
@@ -219,6 +218,7 @@ class ImageProcessing {
     return (type==="max_pool")?[output,mask.flat()]:output
   }
   convolutionLayers({matrix,kernal,featureMaps,stride,padding=0,bias=0,type,activation} = {}){
+    if(featureMaps > kernal.length) throw "Err: Feature maps have to be equal to or less than the filter count"
     let conv1 = []
     for(let j = 0; j < matrix.length; j++){
       conv1[j] = []
@@ -251,15 +251,18 @@ class ImageProcessing {
   }
   flattenImage(featureMapMatrix){
     let connected = [];
-    let shape = {y:featureMapMatrix[0].length,x:featureMapMatrix[0][0].length}
+    let shape = {z:featureMapMatrix.length,y:featureMapMatrix[0].length,x:featureMapMatrix[0][0].length}
     for(let featurePlane of featureMapMatrix) connected.push(featurePlane.flat())
     return [connected.flat(),shape]
   }
   reconstructMatrix(flatArr,m,Matrix=[]){
-    for(let i = 0; i < m.y; i++){
-      Matrix[i] = []
-      for(let j = 0; j < m.x; j++){
-        Matrix[i][j] = flatArr[j + m.x*i]
+    for(let z = 0; z < m.z; z++){
+      Matrix[z] = []
+      for(let i = 0; i < m.y; i++){
+        Matrix[z][i] = []
+        for(let j = 0; j < m.x; j++){
+          Matrix[z][i][j] = flatArr[j + m.x*i + m.y*m.x*z]
+        }
       }
     }
     return Matrix

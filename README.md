@@ -330,7 +330,92 @@ console.log(flat);
 Reconstruct Matrix from Flat Array
 ----------------------------------
 
+Constructs an C x H x W matrix from an array with the provided structure object
+```js
+let flatArr = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16];
+let reconstruct = augmentation.reconstructMatrix(flatArr,{z:4,y:2,x:2})
+console.log(reconstruct);
+/*
+[
+  [ [ 1, 2 ], [ 3, 4 ] ],
+  [ [ 5, 6 ], [ 7, 8 ] ],
+  [ [ 9, 10 ], [ 11, 12 ] ],
+  [ [ 13, 14 ], [ 15, 16 ] ]
+]
+*/
+```
+Reading Images
+--------------
 
+Reads an RGB or RGBA image and and gives an matrix of 3 x H x W each channel for each color ( alpha value is disregarded )
+```js
+//uses module 'image-pixels'
+(async ()=>{
+  //creates a 3 channel output for RGB (3 x H x W)
+  let imageData = await augmentation.processImage("charmander.jfif")
+  console.log({imageData}); // just to see it pretty
+})()
+/*
+{
+  imageData: [
+    [
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array],
+      ... 125 more items
+    ],
+    [
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array],
+      ... 125 more items
+    ],
+    [
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
+      [Array], [Array],
+      ... 125 more items
+    ]
+  ]
+}
+*/
+```
 
 Future Updates
 --------------

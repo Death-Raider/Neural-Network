@@ -164,6 +164,7 @@ Convolution
 -----------
 We can convolve an image matrix in 2 ways:
 1) H x W convolution
+
 ```js
 let matrix = [[1,1,1],[1,1,1],[1,1,1]]
 let conv = augmentation.Convolution({
@@ -183,6 +184,7 @@ console.log("single conv->",conv);
 ```
 
 2) C x H x W convolution
+
 This is for multi channel convolution with varing feature maps.
 In this example we have a 2 x 3 x 3 input image and we convlve it with a 2 x 2 x 2 filter to get a 2 x 2 x 2 x 2 so each channel of the input
 got convolved with the 2 filters.
@@ -221,6 +223,77 @@ multi conv [
 [ [ [ 0, 0 ], [ 1, 1 ] ], [ [ 1, 1 ], [ 0, 0 ] ] ]
 */
 ```
+Invert/Flip
+-----------
+
+This rotates the matrix by 180°
+```js
+let matrix = [
+  [1,2,3,4],
+  [5,6,7,8],
+  [9,10,11,12],
+  [13,14,15,16]
+]
+let flipped = augmentation.Flip(matrix) // matrix type H x W
+console.log("flipped",flipped);
+/*
+flipped [
+  [ 13, 14, 15, 16 ],
+  [ 9, 10, 11, 12 ],
+  [ 5, 6, 7, 8 ],
+  [ 1, 2, 3, 4 ]
+]
+*/
+```
+Normalize
+---------
+
+Normalizes over all channels of the input matrix to between max(min(normalized),-1) and 1
+```js
+matrix = [
+  [[1,2],[3,4]], // channel 1
+  [[0.5,0.5],[0.5,0.5]], // channel 2
+]
+augmentation.Normalize(matrix)  // needs type (C x H x W)
+console.log("normal matrix",matrix);
+
+/*
+normal matrix [
+  [ [ 0.25, 0.5 ], [ 0.75, 1 ] ],
+  [ [ 0.125, 0.125 ], [ 0.125, 0.125 ] ]
+]
+*/
+
+//if the matrix is already normalized it tells 
+augmentation.Normalize(matrix)
+console.log("normal matrix",matrix);
+
+/*
+The matrix is already between 0 and 1
+normal matrix [
+  [ [ 0.25, 0.5 ], [ 0.75, 1 ] ],
+  [ [ 0.125, 0.125 ], [ 0.125, 0.125 ] ]
+]
+*/
+
+//if the matrix has -ve values
+matrix = [
+  [[-5,-3],[6,7]] // chanel 1
+]
+augmentation.Normalize(matrix)
+console.log("normal matrix",matrix);
+
+/*
+normal matrix [
+  [
+    [ -0.7142857142857143, -0.42857142857142855 ],
+    [ 0.8571428571428571, 1 ]
+  ]
+]
+*/
+// max(-0.714,-1) = -0.714 so matrix normalized between -0.714 and 1
+```
+
 
 Future Updates
 --------------

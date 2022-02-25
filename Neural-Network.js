@@ -40,7 +40,7 @@ class NeuralNetwork {
   }
   changes(Desired,Output,DerivativeActivation){//backword pass
     let cost=0;
-    for(let i = 0; i < Desired.length; i++) cost+=0.5*Math.pow(Output[i]-Desired[i],2);
+    for(let i = 0; i < Desired.length; i++) cost+=0.5*Math.pow(Output[i]-Desired[i],2);//calculate loss
     for(let i = 0; i < this.Nodes[this.HiddenLayerCount.length + 1].length; i++){
       this.BiasUpdates[this.Weights.length-1][i]=(this.Nodes[this.HiddenLayerCount.length+1][i]-Desired[i])*DerivativeActivation[1](this.Nodes[this.HiddenLayerCount.length+1][i]);
       for(let j = 0; j < this.Nodes[this.HiddenLayerCount.length].length; j++) this.WeightUpdates[this.Weights.length-1][i][j]=(this.BiasUpdates[this.Weights.length-1][i]*this.Nodes[this.HiddenLayerCount.length][j]);
@@ -133,6 +133,7 @@ class NeuralNetwork {
       const readline  = require('readline');
       const fs = require('fs');
       let sub_dir = fs.readdirSync(folder)
+      sub_dir.filter(e=>(e==="Bias"||e==="Weights"))
       let readInterface, lines=[];
       for(let s in sub_dir){
         let files = fs.readdirSync(`${folder}/${sub_dir[s]}`)
@@ -164,9 +165,8 @@ class ImageProcessing {
     const filterDot = (x,y,M,F) => {
       let sum = 0;
       for(let f1 = 0; f1 < F.length; f1++){
-        for(let f2 = 0; f2 < F[f1].length; f2++){
+        for(let f2 = 0; f2 < F[f1].length; f2++)
           sum += F[f1][f2]*M[f1+y*step.y][f2+x*step.x];
-        }
       }
       return sum;
     }
@@ -268,14 +268,8 @@ class ImageProcessing {
     return Matrix
   }
   Flip(matrix){
-    let matrix_new = []
-    for(let i = 0; i < Math.floor(matrix.length/2); i++){
-      let a = matrix[i].slice()
-      let b = matrix[matrix.length - 1 - i].slice()
-      matrix_new[i] = b;
-      matrix_new[matrix.length - 1 - i] = a;
-    }
-    return matrix_new;
+    const reversed=(a)=>a.slice(0).reverse()
+    return reversed(matrix).map(reversed)
   }
   Normalize(Matrix){
     let x = Math.max(...Matrix.flat(Infinity).map(Math.abs))

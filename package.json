@@ -1,6 +1,6 @@
 {
   "name": "@death_raider/neural-network",
-  "version": "1.1.2",
+  "version": "1.2.1",
   "description": "Simple to use Neural Network",
   "license": "MIT",
   "repository": "https://github.com/Death-Raider/Neural-Network",
@@ -12,8 +12,5 @@
     "machine learning",
     "neural network"
   ],
-  "homepage": "https://github.com/Death-Raider/Neural-Network#readme",
-  "dependencies": {
-    "image-pixels": "^2.2.2"
-  }
+  "homepage": "https://github.com/Death-Raider/Neural-Network#readme"
 }

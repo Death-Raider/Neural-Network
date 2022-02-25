@@ -285,29 +285,5 @@ class ImageProcessing {
       console.log("The matrix is already between 0 and 1");
     }
   }
-  async processImage(path){
-    const pixels = require('image-pixels')
-    let {data, width, height} = await pixels(path)
-
-    let local_newImg_R = [], local_newImg_G = [], local_newImg_B = [],
-    newImg_R = [], newImg_G = [], newImg_B = [];
-    for(let i = 0; i < data.length/4; i++){
-      local_newImg_R[i] = data[4*i]/255;
-      local_newImg_G[i] = data[4*i+1]/255;
-      local_newImg_B[i] = data[4*i+2]/255;
-    }
-    //formatting into correct form
-    for(let i = 0; i < local_newImg_R.length/width; i++){
-      newImg_R[i] = [];
-      newImg_G[i] = [];
-      newImg_B[i] = [];
-      for(let j = 0; j < width; j++){
-        newImg_R[i][j] = local_newImg_R[j + width*i]
-        newImg_G[i][j] = local_newImg_G[j + width*i]
-        newImg_B[i][j] = local_newImg_B[j + width*i]
-      }
-    }
-    return [newImg_R,newImg_G,newImg_B]
-  }
 }
 module.exports = {NeuralNetwork,ImageProcessing};

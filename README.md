@@ -17,10 +17,10 @@ let network = new NeuralNetwork({
   input_nodes : 2,
   layer_count : [2],
   output_nodes :1,
-  weight_bias_initilization_range : [-1,1] 
+  weight_bias_initilization_range : [-1,1]
 });
 ```
-Parameters like the activations for hidden layer and output layers are set as leaky relu and sigmoid respectively but can changed 
+Parameters like the activations for hidden layer and output layers are set as leaky relu and sigmoid respectively but can changed
 ```js
 //format for activation function = [ function ,  derivative of function ]
 network.Activation.hidden = [(x)=>1/(1+Math.exp(-x)),(x)=>x*(1-x)] //sets activation for hidden layers as sigmoid function
@@ -42,7 +42,7 @@ network.train({
   TotalTrain : 1e+6, //total data for training (not epochs)
   batch_train : 1, //batch size for training
   trainFunc : xor, //training function to get data
-  TotalVal : 1000, //total data for validation (not epochs) 
+  TotalVal : 1000, //total data for validation (not epochs)
   batch_val : 1, //batch size for validation
   validationFunc : xor, //validation function to get data
   learning_rate : 0.1 //learning rate (default = 0.0000001)
@@ -103,7 +103,7 @@ Saving the model couldnt be further from simplicity:
 ```js
 network.save(path)
 ```
-Loading the model requires a bit more work as it is asynchronous: 
+Loading the model requires a bit more work as it is asynchronous:
 ```js
 const NeuralNetwork = require('./Neural Network/Neural-Network.js')
 let network = new NeuralNetwork({
@@ -264,7 +264,7 @@ normal matrix [
 ]
 */
 
-//if the matrix is already normalized it tells 
+//if the matrix is already normalized it tells
 augmentation.Normalize(matrix)
 console.log("normal matrix",matrix);
 
@@ -342,78 +342,6 @@ console.log(reconstruct);
   [ [ 9, 10 ], [ 11, 12 ] ],
   [ [ 13, 14 ], [ 15, 16 ] ]
 ]
-*/
-```
-Reading Images
---------------
-
-Reads an RGB or RGBA image and and gives an matrix of 3 x H x W each channel for each color ( alpha value is disregarded )
-```js
-//uses module 'image-pixels'
-(async ()=>{
-  //creates a 3 channel output for RGB (3 x H x W)
-  let imageData = await augmentation.processImage("charmander.jfif")
-  console.log({imageData}); // just to see it pretty
-})()
-/*
-{
-  imageData: [
-    [
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array],
-      ... 125 more items
-    ],
-    [
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array],
-      ... 125 more items
-    ],
-    [
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array], [Array], [Array], [Array], [Array], [Array],
-      [Array], [Array],
-      ... 125 more items
-    ]
-  ]
-}
 */
 ```
 

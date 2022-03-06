@@ -1,17 +1,113 @@
-class NeuralNetwork {
+class LinearAlgebra {
+  constructor(){}
+  basefunc(a,b,opt){ return a instanceof Array ? a.map((c, i) => this.basefunc(a[i], Array.isArray(b)?b[i]:b, opt)) : opt(a,b)}; // base function for any depth code
+  transpose(m){ return m[0].map((e,i) => m.map(row => row[i])); } //only depth 2
+  scalarMatrixProduct(s,m){return this.basefunc(m,s,(arr,scalar)=>arr*scalar)}; //max any depth
+  scalarVectorProduct(s,v){return v1.map(e=>e*s)};//only depth 1
+  vectorDotProduct(v1,v2){return v1.map((e,i,a)=>e*v2[i]).reduce((a,b)=>a+b)}; //only both depth 1
+  MatrixvectorProduct(m,v){return v.map((e,i)=>this.scalarMatrixProduct(e,this.transpose(m)[i])).reduce((a,b)=>a.map( (x, i)=> x + b[i] ))}; //only depth 2 and 1
+  matrixProduct(m1,m2){return m1.map(row => m2[0].map((_,i)=>this.vectorDotProduct( row, m2.map(e=>e[i]) )) )}
+  kroneckerProduct(a,b,r=[],t=[]) {return a.map(a=>b.map(b=>a.map(y=>b.map(x=>r.push(y*x)),t.push(r=[]))))&&t}
+  flip(matrix){
+    let reversed=(a)=>a.slice(0).reverse()
+    return reversed(matrix).map(reversed)
+  }
+  minor(m,i=0,j=0,s=m.length-1){return Array(s).fill(0).map((e,p)=>{
+      let l = m[p+(p>=i?1:0)].slice()
+      l.splice(j,1)
+      return l
+    })}
+  determinant(m,s=m.length){ // matrix (nxn) and its order n > 1
+    if(s == 2){
+      return m[0][0]*m[1][1] - m[0][1]*m[1][0] //determinant of 2x2 matrix
+    }else{
+      let sum = 0
+      for(let i = 0; i < s; i++)
+        sum += (-1)**(i)*m[0][i]*this.determinant(this.minor(m,0,i),s-1)
+      return sum
+    }
+  };
+  invertMatrix(m,s=m.length){ // any nxn matrix
+    let cofactorMatrix = Array(s).fill(0).map(e=>Array(s));
+    let det = 0;
+    for(let i = 0; i < s; i++){
+      for(let j = 0; j < s; j++)
+        cofactorMatrix[j][i] = (-1)**(i+j)*this.determinant(this.minor(m,i,j),s-1); // transpose + values
+      det += m[i][0]*cofactorMatrix[0][i];
+    }
+    if(!det){
+      console.log("matrix not invertiable det =",det);
+      return false
+    }
+    let invert =  this.scalarMatrixProduct(1/det,cofactorMatrix)
+    return invert
+  }
+  weightedSum(k=1,...M){return M.reduce((a,b)=>this.basefunc(a,b,(x,y)=>x+k*y))} ;// same but any depth
+  normalize(m,a=-1,b=1){
+      let min_max = {min:Math.min(...m.flat(Infinity)),max:Math.max(...m.flat(Infinity))}
+      if(min_max.max === min_max.min){
+          if(min_max.max == 0) return m
+          return this.basefunc(m,min_max.max,(x,y)=>x/y)
+      }
+      return this.basefunc(m,min_max,(x,y)=>(b-a)*(x-y.min)/(y.max-y.min)+a)
+  } ;// any depth of matrix
+  vectorize(m){return Array.isArray(m[0][0])?m.flatMap(e=>this.vectorize(e)):this.transpose(m).flat(2)}; // any depth
+  im2row(m,a,q=1,t=[],i=0,j=0,k=0,r){
+    if(Array.isArray(m[0][0])){
+      m.map((e,f)=>this.im2row(e,a,q,t[f]=[],i,j,f))
+      for(let index = 1; index < t.length; index++) t[0] = t[0].map((e,i)=>e.concat(t[index][i]))
+      return t[0]
+    }else{
+      t.push(r=[])
+      for(let x = 0; x < a[1]; x++){
+        for(let y = 0; y < a[0]; y++)
+          r.push(m[y+i][x+j])
+      }
+      return ( i < m.length-a[0] ? this.im2row(m,a,q,t,i+=q,j,k) : j < m[0].length-a[1] ? this.im2row(m,a,q,t,0,j+=q,k) : t )
+    }
+  };
+  im2col(m,a){return this.transpose(this.im2row(m,a))};
+  reconstructMatrix(flatArr,m,Matrix=[]){
+    for(let z = 0; z < m.z; z++){
+      Matrix[z] = []
+      for(let i = 0; i < m.y; i++){
+        Matrix[z][i] = []
+        for(let j = 0; j < m.x; j++){
+          Matrix[z][i][j] = flatArr[j + m.x*i + m.y*m.x*z]
+        }
+      }
+    }
+    return Matrix
+  }
+}
+class NeuralNetwork extends LinearAlgebra{
   constructor({input_nodes,layer_count,output_nodes,weight_bias_initilization_range=[-0.001,0.001] } = {}){
+    super()
     if(input_nodes === undefined || layer_count === undefined || output_nodes === undefined) throw "Error: structural values not given"
     let parameters=createParameters(input_nodes,layer_count,output_nodes,weight_bias_initilization_range[0],weight_bias_initilization_range[1]);
-    const copyRadar3D = (y,z = []) =>{for (let _a in y) for (let _b in y[_a]) {if(!z[_a]) z[_a] = []; z[_a][_b] = y[_a][_b].slice();};return z}
-    const copyRadar2D = (y,z = []) =>{for (let _a in y){if(!z[_a]) z[_a] = []; z[_a] = y[_a].slice();};return z}
+    this.copyRadar3D = (y,z = []) =>{for (let _a in y) for (let _b in y[_a]) {if(!z[_a]) z[_a] = []; z[_a][_b] = y[_a][_b].slice();};return z}
+    this.copyRadar2D = (y,z = []) =>{for (let _a in y){if(!z[_a]) z[_a] = []; z[_a] = y[_a].slice();};return z}
     this.HiddenLayerCount=layer_count;
-    this.Weights = copyRadar3D(parameters[0])
-    this.WeightUpdates = copyRadar3D(parameters[0])
-    this.Bias = copyRadar2D(parameters[1])
-    this.BiasUpdates = copyRadar2D(parameters[1])
+    this.Weights = this.copyRadar3D(parameters[0])
+    this.WeightUpdates = this.copyRadar3D(parameters[0])
+    this.Bias = this.copyRadar2D(parameters[1])
+    this.BiasUpdates = this.copyRadar2D(parameters[1])
+    this.previousGrads = {
+        Weights: this.copyRadar3D(parameters[0]),
+        Bias: this.copyRadar2D(parameters[1])
+    }
     this.Activation = {
       hidden:[(x)=>(x>0)?x:x*0.1,(x)=>(x>0)?1:0.1],
       output:[(x)=>1/(1+Math.exp(-x)),(x)=>x*(1-x)]
+    }
+    this.loss_func = {
+        out: (X,Y,cost = 0)=>{
+            for(let m = 0; m < Y.length; m++) cost+=0.5*Math.pow(X[m]-Y[m],2);
+            return cost
+        },
+        derivative: (X,Y)=>{
+            return (X-Y)*this.Activation.output[1](X) // dY = 0
+        }
     }
     function createParameters(input,LayerCount,output,a,b){
       let MatrixW=[], MatrixB=[];
@@ -39,24 +135,25 @@ class NeuralNetwork {
     return activated;
   }
   changes(Desired,Output,DerivativeActivation){//backword pass
-    let cost=0;
-    for(let i = 0; i < Desired.length; i++) cost+=0.5*Math.pow(Output[i]-Desired[i],2);//calculate loss
+    let cost = this.loss_func.out(Output,Desired)
+
     for(let i = 0; i < this.Nodes[this.HiddenLayerCount.length + 1].length; i++){
-      this.BiasUpdates[this.Weights.length-1][i]=(this.Nodes[this.HiddenLayerCount.length+1][i]-Desired[i])*DerivativeActivation[1](this.Nodes[this.HiddenLayerCount.length+1][i]);
-      for(let j = 0; j < this.Nodes[this.HiddenLayerCount.length].length; j++) this.WeightUpdates[this.Weights.length-1][i][j]=(this.BiasUpdates[this.Weights.length-1][i]*this.Nodes[this.HiddenLayerCount.length][j]);
+      this.BiasUpdates[this.Weights.length-1][i] = this.loss_func.derivative(this.Nodes[this.HiddenLayerCount.length+1][i] , Desired[i]) // output node of model and desired nodes
+      for(let j = 0; j < this.Nodes[this.HiddenLayerCount.length].length; j++) this.WeightUpdates[this.Weights.length-1][i][j] = (this.BiasUpdates[this.Weights.length-1][i]*this.Nodes[this.HiddenLayerCount.length][j]);
     }
     for(let j = this.Weights.length - 2; j > -1; j--){//iterates of all layers except the last one
       for(let k = 0,sum = 0; k < this.Weights[j].length; k++,sum = 0){
-        for(let m = 0; m < this.Weights[j+1].length; m++) sum+=this.Weights[j+1][m][k]*this.WeightUpdates[j+1][m][k];
-        for(let p = 0; p < this.Weights[j][k].length; p++) this.WeightUpdates[j][k][p]=(sum*(DerivativeActivation[0](this.Nodes[j+1][k]))*this.Nodes[j][p])/((this.Nodes[j+1][k]==0)?1:this.Nodes[j+1][k]);
-        this.BiasUpdates[j][k]=(sum*(DerivativeActivation[0](this.Nodes[j+1][k])))/((this.Nodes[j+1][k]==0)?1:this.Nodes[j+1][k]);
+        for(let m = 0; m < this.Weights[j+1].length; m++) sum += this.Weights[j+1][m][k]*this.WeightUpdates[j+1][m][k];
+        this.BiasUpdates[j][k]= (sum*(DerivativeActivation[0](this.Nodes[j+1][k])))/((this.Nodes[j+1][k]==0)?1:this.Nodes[j+1][k]);
+        for(let p = 0; p < this.Weights[j][k].length; p++) this.WeightUpdates[j][k][p] = this.BiasUpdates[j][k] * this.Nodes[j][p];
       }
     }
     return {updatedWeights:this.WeightUpdates,updatedBias:this.BiasUpdates,Cost:cost};
   }
   getInputGradients(grad = []){
     for(let k = 0,sum = 0; k < this.Nodes[0].length; k++,sum = 0){
-      for(let m = 0; m < this.Weights[0].length; m++) sum += this.Weights[0][m][k]*this.WeightUpdates[0][m][k];
+      for(let m = 0; m < this.Weights[0].length; m++)
+        sum += this.Weights[0][m][k]*this.WeightUpdates[0][m][k]
       grad[k] = sum/((this.Nodes[0][k]===0)?1:this.Nodes[0][k]);
     }
     return grad
@@ -64,44 +161,55 @@ class NeuralNetwork {
   update(secondTensor,secondMatrixBias,rate){//Readjustment of weights and bias
     for(let i = 0; i < secondTensor.length; i++){
       for(let j = 0; j < secondTensor[i].length; j++){
-        for(let k = 0; k < secondTensor[i][j].length; k++) this.Weights[i][j][k]-=rate*secondTensor[i][j][k];
+        for(let k = 0; k < secondTensor[i][j].length; k++) this.Weights[i][j][k] -= rate*secondTensor[i][j][k];
         this.Bias[i][j]-=rate*secondMatrixBias[i][j];
       }
     }
   }
-  train({TotalTrain=0,trainFunc=()=>{},TotalVal=0,validationFunc=()=>{},learning_rate=0.0005,batch_train = 1,batch_val = 1} = {}){
+  train({TotalTrain=0,trainFunc=()=>{},TotalVal=0,validationFunc=()=>{},learning_rate=0.0005,batch_train=1,batch_val=1,momentum=0}={}){
     let cost=[], cost_val=[], changing = [];
-    for(let i = 0; i < parseInt((TotalTrain/batch_train+TotalVal/batch_val)); i++){
-      let batch = (i < parseInt(TotalTrain/batch_train))?batch_train:batch_val;
+    let Parameters = {W:[],B:[]}
+    for(let i = 0; i < Math.floor((TotalTrain/batch_train+TotalVal/batch_val)); i++){
+      let batch = (i < Math.floor(TotalTrain/batch_train))?batch_train:batch_val;
       let sumCost = 0;
       for(let b = 0; b < batch ; b++){
-        let [input,desir] = (i <= parseInt(TotalTrain/batch_train))?trainFunc(b,i):validationFunc(b,i);
+        let [input,desir] = (i <= Math.floor(TotalTrain/batch_train))?trainFunc(b,i):validationFunc(b,i);
         this.Nodes=this.GetLayerValues(input,[this.Activation.hidden[0],this.Activation.output[0]]);
-        changing[b]=this.changes(desir,this.Nodes[this.Nodes.length-1],[this.Activation.hidden[1],this.Activation.output[1]]);
+        changing[b] = this.changes(desir,this.Nodes[this.Nodes.length-1],[this.Activation.hidden[1],this.Activation.output[1]]);
         sumCost += changing[b].Cost/batch
       }
-      if(i < parseInt(TotalTrain/batch_train)){
+      if(i < Math.floor(TotalTrain/batch_train)){
         cost.push(sumCost);
+        Parameters.W.push(this.copyRadar3D(this.Weights))
+        Parameters.B.push(this.copyRadar2D(this.Bias))
         for(let x = 0; x < changing[0].updatedWeights.length; x++){
           for(let y = 0,sumBias = 0; y < changing[0].updatedWeights[x].length; y++,sumBias = 0){
             for(let z = 0,sumWeight = 0; z < changing[0].updatedWeights[x][y].length; z++,sumWeight = 0){
-              for(let b = 0; b < batch; b++)sumWeight += changing[b].updatedWeights[x][y][z]/batch
+              for(let b = 0; b < batch; b++){
+                  sumWeight += changing[b].updatedWeights[x][y][z]
+              }
+              sumWeight = this.previousGrads.Weights[x][y][z]*momentum +  (1-momentum)*sumWeight
               this.WeightUpdates[x][y][z] = sumWeight;
             }
-            for(let b = 0; b < batch; b++)sumBias += changing[b].updatedBias[x][y]/batch
+            for(let b = 0; b < batch; b++){
+                sumBias += changing[b].updatedBias[x][y]
+            }
+            sumBias = this.previousGrads.Bias[x][y]*momentum + (1-momentum)*sumBias
             this.BiasUpdates[x][y] = sumBias;
           }
         }
         this.update(this.WeightUpdates,this.BiasUpdates,learning_rate);
+        this.previousGrads.Weights = this.copyRadar3D(this.WeightUpdates)
+        this.previousGrads.Bias = this.copyRadar2D(this.BiasUpdates)
       }else{cost_val.push(sumCost)}
     }
-    this.Loss = {Train_Loss:cost,Validation_Loss:cost_val};
+    this.Loss = {Train_Loss:cost,Validation_Loss:cost_val, params: Parameters};
+
   }
-  trainIteration({input,desired,learning_rate=0.0001}={}){
+  trainIteration({input,desired}={}){
     this.Nodes = this.GetLayerValues(input,[this.Activation.hidden[0],this.Activation.output[0]]);
     let changing = this.changes(desired,this.Nodes[this.Nodes.length-1],[this.Activation.hidden[1],this.Activation.output[1]]);
-    this.update(this.WeightUpdates,this.BiasUpdates,learning_rate);
-    return {Cost:changing.Cost,layers:this.Nodes}
+    return {Cost:changing.Cost,Layers:this.Nodes, Updates: changing}
   }
   use(input){return this.GetLayerValues(input,[this.Activation.hidden[0],this.Activation.output[0]])}
   save(folder){
@@ -133,7 +241,6 @@ class NeuralNetwork {
       const readline  = require('readline');
       const fs = require('fs');
       let sub_dir = fs.readdirSync(folder)
-      sub_dir.filter(e=>(e==="Bias"||e==="Weights"))
       let readInterface, lines=[];
       for(let s in sub_dir){
         let files = fs.readdirSync(`${folder}/${sub_dir[s]}`)
@@ -152,138 +259,132 @@ class NeuralNetwork {
     this.Weights = model[1];
   }
 }
-class ImageProcessing {
-  constructor(){}
-  Convolution({matrix,filter,bias = 0,step = {x:1,y:1},padding = 0,type="conv",activation = "linear"} = {}){
-    let activationBank = {
-      relu:[(x)=>(x>0)?x:0,(x)=>(x>0)?1:0],
-      sigmoid:[(x)=>1/(1+Math.exp(-x)),(x)=>x*(1-x)],
-      linear:[(x)=>x,(x)=>1]
-    };
-    let Activation = activationBank[activation.toLowerCase()] //linear activation and derivative
-    //dot product of filter and the selected image section
-    const filterDot = (x,y,M,F) => {
-      let sum = 0;
-      for(let f1 = 0; f1 < F.length; f1++){
-        for(let f2 = 0; f2 < F[f1].length; f2++)
-          sum += F[f1][f2]*M[f1+y*step.y][f2+x*step.x];
-      }
-      return sum;
-    }
-    // apply padding to matrix
-    const padMatrix = (matrix,pad,val) => {
-      let padded_matrix = new Array(matrix.length + 2*pad).fill(0).map(e=>new Array(matrix[0].length + 2*pad).fill(val));
-      for(let i = pad; i < matrix.length + pad; i++)
-        for(let j = pad; j < matrix[i-pad].length + pad; j++) padded_matrix[i][j] = matrix[i-pad][j-pad];
-      return padded_matrix;
-    }
-    //special case for max_pool
-    if(type==="max_pool"){
-      filter = [[0,0],[0,0]];
-      bias = 0;
-      step = {x:2,y:2}
-    }
-    if(matrix === undefined || filter === undefined) throw "Err: Input matrix or filter not specified"
-    //adds padding to matrix
-    matrix = padMatrix(matrix,padding,0)
-    let mask = []; //use to create a mask when max_pooling for gradient transfer
-    let outputSize = {
-      y : 1+(matrix.length - filter.length)/step.y,
-      x : 1+(matrix[0].length - filter[0].length)/step.x
-    }
-    //checking if convolution is possible
-    if(outputSize.y-Math.floor(outputSize.y) !== 0 || outputSize.x-Math.floor(outputSize.x) !== 0 ) throw "Err: size not compatible with " + type;
-    let output = new Array(outputSize.y).fill(0).map(e=>new Array(outputSize.x).fill(0))//convoluted output
-    //types of convolutions
-    for(let y = 0; y < outputSize.y; y++){
-      mask[y] = []
-      for(let x = 0; x < outputSize.x; x++){
-        if(type==="conv") output[y][x] = Activation[0](filterDot(x,y,matrix,filter) + bias);
-        else if(type==="max_pool"){
-          mask[y][x] = {value:0,position:{x:0,y:0}};
-          for(let f1 = 0; f1 < 2; f1++){
-            for(let f2 = 0; f2 < 2; f2++){
-              if(matrix[f1+y*step.y][f2+x*step.x]>=mask[y][x].value){
-                mask[y][x].value = matrix[f1+y*step.y][f2+x*step.x];
-                mask[y][x].position.x = f2+x*step.x;
-                mask[y][x].position.y = f1+y*step.y;
-              }
-            }
-          }
-          output[y][x] = mask[y][x].value + bias
-        }
-        else throw "Err: unidentified type"
-      }
-    }
-    return (type==="max_pool")?[output,mask.flat()]:output
+
+class Convolution extends LinearAlgebra{
+  constructor(){
+    super();
+    this.x_shape = []
+    this.f_shape = []
+    this.y_shape = []
+    this.F = []
+    this.phi = []
   }
-  convolutionLayers({matrix,kernal,featureMaps,stride,padding=0,bias=0,type,activation} = {}){
-    if(featureMaps > kernal.length) throw "Err: Feature maps have to be equal to or less than the filter count"
-    let conv1 = []
-    for(let j = 0; j < matrix.length; j++){
-      conv1[j] = []
-      for(let i = 0; i < featureMaps; i++){
-        conv1[j][i] = this.Convolution({
-          matrix : matrix[j],
-          filter : kernal[i],
-          step : stride,
-          padding : padding,
-          type : type,
-          bias : bias,
-          activation : activation
-        })
-      }
+  convolution(x,f=this.F,reshape=true,activation=(x)=>(x>0)?x:0){
+    if(this.x_shape.length === this.f_shape.length){// only true when both are length 0 aka when first defined
+      this.x_shape = [x[0].length, x[0][0].length,x.length]
+      this.f_shape = [f[0][0].length,f[0][0][0].length,f[0].length,f.length]
     }
-    return conv1
-  }
-  createMatrix(z,y,x){
-    let M = []
-    for(let i = 0; i < z; i++){
-      M[i] = []
-      for(let j = 0; j < y; j++){
-        M[i][j] = []
-        for(let k = 0; k < x; k++){
-          M[i][j][k] = Math.random()*2 - 1
-        }
-      }
+    this.y_shape = [this.x_shape[0]-this.f_shape[0]+1, this.x_shape[1]-this.f_shape[1]+1 , this.f_shape[3]]
+    this.phi = super.im2row(x,[this.f_shape[0], this.f_shape[1]])
+    if(this.F.length === 0){
+      for(let d = 0; d < this.f_shape[3]; d++) this.F.push(super.vectorize(f[d]))
     }
-    return M;
-  }
-  flattenImage(featureMapMatrix){
-    let connected = [];
-    let shape = {z:featureMapMatrix.length,y:featureMapMatrix[0].length,x:featureMapMatrix[0][0].length}
-    for(let featurePlane of featureMapMatrix) connected.push(featurePlane.flat())
-    return [connected.flat(),shape]
-  }
-  reconstructMatrix(flatArr,m,Matrix=[]){
-    for(let z = 0; z < m.z; z++){
-      Matrix[z] = []
-      for(let i = 0; i < m.y; i++){
-        Matrix[z][i] = []
-        for(let j = 0; j < m.x; j++){
-          Matrix[z][i][j] = flatArr[j + m.x*i + m.y*m.x*z]
-        }
-      }
+    let F = super.transpose(this.F)
+    let y = super.matrixProduct(this.phi,F)
+    if(reshape){
+      y = super.vectorize(y).map(e=>activation(e))
+      return super.reconstructMatrix(y, {x:this.y_shape[0],y:this.y_shape[1],z:this.y_shape[2]}).map(e=>super.transpose(e))
     }
-    return Matrix
+    return y
   }
-  Flip(matrix){
-    const reversed=(a)=>a.slice(0).reverse()
-    return reversed(matrix).map(reversed)
+  filterGrads(prevGrads,lr = 0.01){
+    let grads_f = super.matrixProduct(super.transpose(prevGrads), this.phi)
+    this.F = super.weightedSum(-lr,this.F,grads_f)
+    return grads_f
   }
-  Normalize(Matrix){
-    let x = Math.max(...Matrix.flat(Infinity).map(Math.abs))
-    if(x > 1){
-      for(let i = 0; i < Matrix.length; i++){
-        for(let j = 0; j < Matrix[i].length; j++){
-          for(let k = 0; k < Matrix[i][j].length; k++){
-            Matrix[i][j][k] /= x
-          }
-        }
+  layerGrads(prevGrads){
+    //m -> array to store layer gradients of shape (H_l W_l x D_l)
+    let m = Array(this.x_shape[2]).fill(0).map( e=>Array(this.x_shape[0]).fill(0).map( q=>Array(this.x_shape[1]) ) )
+    let mu = super.matrixProduct(prevGrads, this.F)
+    const m_inv = (i_l, j_l, d_l) =>{ //mapping from x (i_l,j_l,d_l) to phi (p,q)
+      let set = []
+      for(let w = 0; w < this.f_shape[0]*this.f_shape[1]*this.f_shape[2]; w++){
+        let i = w%this.f_shape[0]
+        let j = Math.floor(w/this.f_shape[0])%this.f_shape[1]
+        let y_i = i_l - i
+        let y_j = j_l - j
+        let p = y_i + this.y_shape[0]*y_j
+        let q = i + j*this.f_shape[0] + this.f_shape[0]*this.f_shape[1]*d_l
+        if(y_i > -1 && y_i < this.y_shape[0] && y_j < this.y_shape[1] && y_j > -1 && p < this.y_shape[0]*this.y_shape[1] && q < this.f_shape[0]*this.f_shape[1]*m.length)
+          if(set.filter(e=>e[0]==p&&e[1]==q).length == 0) set.push([p,q]) //checking for duplicates
       }
-    }else{
-      console.log("The matrix is already between 0 and 1");
+      return set
     }
+    for(let o = 0; o < m.length*m[0].length*m[0][0].length; o++){ // goes through all indices of m
+      let i_l = o%m[0].length
+      let j_l = Math.floor(o/m[0].length)%m[0][0].length
+      let d_l = Math.floor(o/(m[0].length*m[0][0].length))
+      let indices = m_inv(i_l,j_l,d_l)
+      m[d_l][i_l][j_l] = 0
+      for(let k = 0; k < indices.length; k++) m[d_l][i_l][j_l] += mu[indices[k][0]][indices[k][1]]
+    }
+    return m
+  }
+  saveFilters(folder){
+      const fs = require('fs')
+      if(!fs.existsSync(folder)) fs.mkdirSync(folder);
+      let stream = fs.createWriteStream(`${folder}/Filter.txt`);
+      let data = {
+          X_shape:this.x_shape,
+          Y_shape:this.y_shape,
+          F_shape:this.f_shape,
+          Filter:this.F,
+      }
+      stream.write(JSON.stringify(data))
+      stream.end()
   }
 }
-module.exports = {NeuralNetwork,ImageProcessing};
+class MaxPool extends LinearAlgebra{
+  constructor(){
+    super();
+    this.shape = []
+    this.location = []
+  }
+  pool(inp,size = 2,stride=2,reshape=true){
+    let M = inp.map((m,index)=>{
+      if(m.length%stride != 0 || m[0].length%stride != 0 || size > m.length || size > m[0].length){
+        console.log("pooling cant be done with set stride");
+        return false;
+      };
+      this.shape = [inp[0].length, inp[0][0].length, inp.length];
+      let H = m.length/stride;
+      let W = m[0].length/stride;
+      let i=0,j=0;
+      this.location[index] = [];
+      let phi = super.im2row(m,[size,size],stride).map((e,l)=>{
+        let max = Math.max(...e);
+        let q = e.indexOf(max);
+        let fi = q%size+i , fj = Math.floor(q/size)+j;
+        i=(i<(m.length-size))? i+stride:0;
+        (j < (m[0].length-size) && i==0)?j+=stride:0;
+        this.location[index].push([fi,fj]);
+        return max;
+      });
+      return super.reconstructMatrix(phi, {x:W,y:H,z:1}).map(e=>super.transpose(e)).flat();
+    });
+    return reshape?M:super.vectorize(M);
+  }
+  layerGrads(prevGrads){
+    let m = Array(this.shape[1]*this.shape[0]).fill(0).map(e=>Array(this.shape[2]).fill(0).map(e=>0))
+    this.location.forEach((e,i)=>{
+      prevGrads.forEach((p,j)=>{
+        let index = e[j][0]+e[j][1]*this.shape[1]
+        m[index][i] = p[i]
+      })
+    })
+    return m
+  }
+  savePool(folder){
+      const fs = require('fs')
+      if(!fs.existsSync(folder)) fs.mkdirSync(folder);
+      let stream = fs.createWriteStream(`${folder}/Pool.txt`);
+      let data = {
+          Loc:this.location,
+          Shape:this.shape
+      }
+      stream.write(JSON.stringify(data))
+      stream.end()
+
+  }
+}
+module.exports = {NeuralNetwork,LinearAlgebra,Convolution,MaxPool};

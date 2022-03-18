@@ -106,7 +106,7 @@ network.save(path)
 ```
 Loading the model is asynchronous:
 ```js
-const NeuralNetwork = require("@death_raider/neural-network")
+const {NeuralNetwork} = require("@death_raider/neural-network")
 let network = new NeuralNetwork({
   input_nodes : 2,
   layer_count : [2],
@@ -131,6 +131,7 @@ Base function
 --------------
 The base function (basefunc) is a recursive function that takes in 3 parameters a, b, and Opt where a is an array and b is an object and opt is a function. The basefunc goes over all elements of a and also b if b is an array and then passes those elements to the opt function defined by the user. opt will take in 2 parameters and the return can be any object.
 ```js
+const {LinearAlgebra} = require("@death_raider/neural-network")
 linearA = new LinearAlgebra
 let a = [
     [1,2,3,4],

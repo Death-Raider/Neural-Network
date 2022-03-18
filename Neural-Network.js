@@ -105,7 +105,7 @@ class NeuralNetwork extends LinearAlgebra{
             for(let m = 0; m < Y.length; m++) cost+=0.5*Math.pow(X[m]-Y[m],2);
             return cost
         },
-        derivative: (X,Y)=>{
+        derivative: (X,Y,i)=>{
             return (X-Y)*this.Activation.output[1](X) // dY = 0
         }
     }
@@ -138,7 +138,7 @@ class NeuralNetwork extends LinearAlgebra{
     let cost = this.loss_func.out(Output,Desired)
 
     for(let i = 0; i < this.Nodes[this.HiddenLayerCount.length + 1].length; i++){
-      this.BiasUpdates[this.Weights.length-1][i] = this.loss_func.derivative(this.Nodes[this.HiddenLayerCount.length+1][i] , Desired[i]) // output node of model and desired nodes
+      this.BiasUpdates[this.Weights.length-1][i] = this.loss_func.derivative(this.Nodes[this.HiddenLayerCount.length+1][i] , Desired[i],i) // output node of model and desired nodes
       for(let j = 0; j < this.Nodes[this.HiddenLayerCount.length].length; j++) this.WeightUpdates[this.Weights.length-1][i][j] = (this.BiasUpdates[this.Weights.length-1][i]*this.Nodes[this.HiddenLayerCount.length][j]);
     }
     for(let j = this.Weights.length - 2; j > -1; j--){//iterates of all layers except the last one
@@ -237,26 +237,34 @@ class NeuralNetwork extends LinearAlgebra{
     }
   }
   async load(path){
-    function getLines(folder,res){
-      const readline  = require('readline');
-      const fs = require('fs');
-      let sub_dir = fs.readdirSync(folder)
-      let readInterface, lines=[];
-      for(let s in sub_dir){
-        let files = fs.readdirSync(`${folder}/${sub_dir[s]}`)
+
+    const readline  = require('readline');
+    const fs = require('fs');
+    let sub_dir = fs.readdirSync(path)
+    let readInterface, lines=[];
+
+    for(let s in sub_dir){
+        let files = fs.readdirSync(`${path}/${sub_dir[s]}`)
         lines[s] = []
         for(let f in files){
           lines[s][f] = [];
-          readInterface = readline.createInterface({input: fs.createReadStream(`${folder}/${sub_dir[s]}/${files[f]}`)});
-          readInterface.on('line', function(line){lines[s][f].push(JSON.parse(line))});
+          let readLinePromise = new Promise((res,rej)=>{
+              let promiseArr = []
+              readInterface = readline.createInterface({
+                  input: fs.createReadStream(`${path}/${sub_dir[s]}/${files[f]}`)
+              });
+              readInterface.on('line', function(line){
+                  promiseArr.push(JSON.parse(line))
+              });
+              readInterface.on('close', ()=>{res(promiseArr)});
+          })
+          lines[s][f].push(await readLinePromise)
         }
-      }
-      readInterface.on('close', ()=>{res(lines)});
     }
-    let model = new Promise(function(resolve, reject){getLines(path,resolve)});
-    model = await model;
-    this.Bias = model[0].flat();
-    this.Weights = model[1];
+    let model = lines
+    // model = await model;
+    this.Bias = model[0].flat(2);
+    this.Weights = model[1].flat(1);
   }
 }
 

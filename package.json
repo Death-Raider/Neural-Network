@@ -12,5 +12,8 @@
     "machine learning",
     "neural network"
   ],
+  "scripts": {
+    "test": "node Application.js"
+  },
   "homepage": "https://github.com/Death-Raider/Neural-Network#readme"
 }

@@ -1,6 +1,5 @@
 const {NeuralNetwork,LinearAlgebra,Convolution,MaxPool} = require('./Neural-Network.js')
 const mnist = require('mnist')
-const fs = require('fs')
 const cliProgress = require('cli-progress');
 
 function createMatrix(z,y,x,value){
@@ -45,19 +44,6 @@ let network = new NeuralNetwork({
 network.Activation.hidden = [(x)=>1/(1+Math.exp(-x)),(x)=>x*(1-x)]
 //Required parameters
 let acc = {t:0,f:0}
-let Data = [
-    {
-        cost:[],
-        pred:[],
-        true:[],
-        step:[],
-        acc:[],
-        F1: [],
-        F2: [],
-        W: [],
-        B: []
-    }
-]
 let BATCH_Stack = {
     Filters:[],
     FullyConnected:[]
@@ -133,7 +119,6 @@ function Train(){
             if(step%1000 == 0){
                 // every 1000 steps reset accuracy and fill logs
                 acc = {t:0,f:0}
-                fs.writeFileSync('logs\\Info.json', JSON.stringify(Data));
             }
 
             if(step%BATCH_SIZE == 0){
@@ -166,14 +151,6 @@ function Train(){
                     }else{
                         acc.f += 1
                     }
-                    //redefining data for new epoch
-                    if (Data[epoch] === undefined) Data[epoch] = {cost:[],pred:[],true:[],step:[],acc:[],F1: [],F2: [],W: [],B: []};
-                    //updating Data
-                    Data[epoch].cost.push(parseFloat(out.Cost.toFixed(3)))
-                    Data[epoch].pred.push(pred.indexOf(Math.max(...pred)))
-                    Data[epoch].true.push(desired.indexOf(Math.max(...desired)))
-                    Data[epoch].step.push(step)
-                    Data[epoch].acc.push(parseFloat((acc.t/(1000/BATCH_SIZE)).toFixed(3)))
                 }
                 //Reinitilizing Batch
                 BATCH_Stack.Filters = []
@@ -193,16 +170,10 @@ function Train(){
             "epoch",epoch,
             "acc:",acc.t*BATCH_SIZE/10,"%",acc.f*BATCH_SIZE/10,"%"
         );
-        Data[epoch].F1 = conv.F
-        Data[epoch].F2 = conv2.F
-        Data[epoch].W = network.Weights
-        Data[epoch].B = network.Bias
-        //Write in logs
-        // fs.writeFileSync('Info.json', JSON.stringify(Data));
         //Save network
-        network.save("Net1")
-        conv.saveFilters("Conv")
-        conv2.saveFilters("Conv2")
-        mxPool1.savePool("Pool")
+        // network.save("Net1")
+        // conv.saveFilters("Conv")
+        // conv2.saveFilters("Conv2")
+        // mxPool1.savePool("Pool")
     }
 }

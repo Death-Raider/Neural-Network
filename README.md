@@ -11,7 +11,7 @@ This is an easy to use Neural Network package with SGD using backpropagation as 
 Creating the model
 ------------------
 ```js
-const NeuralNetwork = require("@death_raider/neural-network").NeuralNetwork
+const NeuralNetwork = require('./Neural-Network.js').NeuralNetwork
 //creates ANN with 2 input nodes, 1 hidden layers with 2 hidden nodes and 1 output node
 let network = new NeuralNetwork({
   input_nodes : 2,
@@ -104,9 +104,9 @@ Saving the model couldnt be further from simplicity:
 ```js
 network.save(path)
 ```
-Loading the model is asynchronous:
+Loading the model requires a bit more work as it is asynchronous:
 ```js
-const {NeuralNetwork} = require("@death_raider/neural-network")
+const NeuralNetwork = require('./Neural-Network.js')
 let network = new NeuralNetwork({
   input_nodes : 2,
   layer_count : [2],
@@ -131,7 +131,6 @@ Base function
 --------------
 The base function (basefunc) is a recursive function that takes in 3 parameters a, b, and Opt where a is an array and b is an object and opt is a function. The basefunc goes over all elements of a and also b if b is an array and then passes those elements to the opt function defined by the user. opt will take in 2 parameters and the return can be any object.
 ```js
-const {LinearAlgebra} = require("@death_raider/neural-network")
 linearA = new LinearAlgebra
 let a = [
     [1,2,3,4],
@@ -183,18 +182,18 @@ Matrix Manipulation
     <li>Weighted Sum(.weightedSum(weight,matrix1,matrix2,matrix3,...))</li>
         Takes the element from Matrix1 and adds to the element of Matrix2 * weight and then the result is added to the element of Matrix3 * weight and repeated for all given matrices.
 </ol>
-
 #Convolution
-------------
 This class can compute the convolution of an 3 dimensional array with a filter of 4 dimensions using the im2row operator, more details can be found <a href="https://cs.nju.edu.cn/wujx/paper/CNN.pdf">here</a>. Aside from convolution, It also provides the Input gradients and updates the filter based on the previous gradients and a learning rate.
 
+Convolution
+-----------
 <h3>.convolution(input, filters, reshape, activation)</h3>
 Input is a 3 dimensional input of shape CxHxW <br />
 Filters is a 4 dimensional input of shape DxCxH'xW' <br />
 Reshape is bool. If true then it is reshaped into DxH"xW" and the activations function is applied to all elements else the output is of shape H"W"xD and the columns are stacked of the output to get the H"W" <br />
 
 ```js
-const {Convolution, LinearAlgebra} = require("@death_raider/neural-network")
+const {Convolution, LinearAlgebra} = require('./Neural-Network.js')
 const conv = new Convolution
 let input = [[
     [0,0,1,1,0,0],
@@ -307,7 +306,7 @@ Input is of shape CxHxW, size and stride are both integers, and reshape is bool.
 if reshape is true then output is a matrix, otherwise output will be the vectorized matrix.
 
 ```js
-const {MaxPool} = require("@death_raider/neural-network")
+const {MaxPool} = require('./Neural-Network.js')
 const mxpool = new MaxPool
 let input = [[
     [0,0,1,1,0,0],
@@ -361,7 +360,7 @@ mxpool.savePool("path")
 
 #Application of CNN
 --------------------
-In the Application.js file, I have created a simple CNN for mnist number recognition but there are more modules needed to install first.
+In the Application.js file, I have created a simple CNN for mnist number recognition but there are more modules needed to install first. After training finishes then u can start running plot.py to see how the loss and accuracy changed
 
 ```cmd
 npm install mnist cli-progress
